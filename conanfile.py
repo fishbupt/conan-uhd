@@ -10,6 +10,7 @@ class UhdConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     options = {"shared": [True, False]}
     default_options = "shared=False"
+    requires = "Boost/1.58.0/lasote/stable"
     generators = "cmake"
     folder_name = "release_%s" % version.replace(".", "_")
 
@@ -20,6 +21,11 @@ class UhdConan(ConanFile):
         tools.download(url, zip_name)
         tools.unzip(zip_name)
         os.unlink(zip_name)
+
+        # Intergrate conan with cmake
+        tools.replace_in_file("uhd-%s/host/CMakeLists.txt" % self.folder_name, "PROJECT(UHD CXX C)", '''PROJECT(UHD CXX C)
+include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+conan_basic_setup()''')
 
     def build(self):
         cmake= CMake(self)
@@ -32,8 +38,11 @@ class UhdConan(ConanFile):
         cmake.definitions["ENABLE_MANUAL"] = "OFF"
         cmake.definitions["ENABLE_MAN_PAGES"] = "OFF"
         cmake.definitions["ENABLE_TESTS"] = "OFF"
+        cmake.definitions["ENABLE_UTILS"] = "OFF"
+        cmake.definitions["ENABLE_OCTOCLOCK"] = "OFF"
+        cmake.definitions["ENABLE_X300"] = "OFF"
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder
-        cmake.configure(source_dir="../uhd-%s/host" % self.folder_name, build_dir="./build")
+        cmake.configure(source_dir="uhd-%s/host" % self.folder_name)
         cmake.build()
         cmake.install()
 

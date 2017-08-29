@@ -45,5 +45,8 @@ conan_basic_setup()''')
         cmake.build()
         cmake.install()
 
+        # download and install FPGA&FW images
+        self.run("python ./utils/uhd_images_downloader.py")
+
     def package_info(self):
         self.cpp_info.libs= ["uhd"]

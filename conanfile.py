@@ -8,9 +8,9 @@ class UhdConan(ConanFile):
     license = "<Put the package license here>"
     url = "<Package recipe repository url here, for issues about the package>"
     settings = "os", "compiler", "build_type", "arch"
-    options = {"shared": [True, False]}
-    default_options = "shared=False"
-    requires = "Boost/1.58.0/lasote/stable"
+    options = {"enable_static": [True, False]}
+    default_options = "enable_static=False", "Boost:shared=True", "Boost:fPIC=True"
+    requires = "Boost/1.62.0/lasote/stable"
     generators = "cmake"
     folder_name = "release_%s" % version.replace(".", "_")
 
@@ -29,18 +29,17 @@ conan_basic_setup()''')
 
     def build(self):
         cmake= CMake(self)
-        if self.options.shared:
-            cmake.definitions["BUILD_SHARED_LIBS"] = "ON"
-        else:
-            cmake.definitions["BUILD_SHARED_LIBS"] = "OFF"
+        if self.options.enable_static:
+            cmake.definitions["ENABLE_STATIC_LIBS"] = "ON"
+
         cmake.definitions["ENABLE_DOXYGEN"] = "OFF"
         cmake.definitions["ENABLE_EXAMPLES"] = "OFF"
         cmake.definitions["ENABLE_MANUAL"] = "OFF"
         cmake.definitions["ENABLE_MAN_PAGES"] = "OFF"
         cmake.definitions["ENABLE_TESTS"] = "OFF"
-        cmake.definitions["ENABLE_UTILS"] = "OFF"
-        cmake.definitions["ENABLE_OCTOCLOCK"] = "OFF"
-        cmake.definitions["ENABLE_X300"] = "OFF"
+        # cmake.definitions["ENABLE_UTILS"] = "OFF"
+        # cmake.definitions["ENABLE_OCTOCLOCK"] = "OFF"
+        # cmake.definitions["ENABLE_X300"] = "OFF"
         cmake.definitions["CMAKE_INSTALL_PREFIX"] = self.package_folder
         cmake.configure(source_dir="uhd-%s/host" % self.folder_name)
         cmake.build()
